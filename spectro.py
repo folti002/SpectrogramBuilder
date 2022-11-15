@@ -1,6 +1,8 @@
+import math
 import sys
 import wave
 import numpy as np
+import matplotlib.pyplot as plt
 
 def readWav(wavFile):
   wav = wave.open(wavFile)
@@ -9,28 +11,30 @@ def readWav(wavFile):
   count = 0
   windows = []
   sampleList = []
+  hanning = np.hanning(400)
   for i in range (nframes):
     sample = wav.readframes(1)
-    sample = (np.frombuffer(sample, dtype='int16'))[0]
+    sample = (np.frombuffer(sample, dtype='int16'))[0] # IS THIS CORRECT?
     sampleList.append(sample)
-    if count == 400 or i == nframes - 1:
-      windows.append(sampleList)
-      count = 239
-      sampleList = sampleList[-240:]
     count += 1
+    if count == 400:
+      hanninged = [hanning[i] * sampleList[i] for i in range(len(sampleList))]
+      windows.append(hanninged)
+      count = 240
+      sampleList = sampleList[-240:]
   return windows
 
 def fft(windows):
   fftWindows = []
   for list in windows:
-    # print(list)
-    fftWindows.append(np.fft.fft([list]))
-  print(fftWindows)
+    fftWindows.append(np.fft.fft(list))
+  
 
 def main():
   wavFile = sys.argv[1]
   windows = readWav(wavFile)
-  fft(windows)
+  magWindows = fft(windows)
+  
   return
 
 if __name__ == '__main__':
