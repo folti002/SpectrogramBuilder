@@ -38,17 +38,41 @@ def fft(windows):
     magWindows.append(singleWindow)
   return magWindows
 
+def normalize (magWindows):
+  minVal = float("inf")
+  maxVal = float("-inf")
+  for list in magWindows: # Get max and min of lists to normalize
+    listMax = max(list)
+    listMin = min(list)
+    if listMax > maxVal:
+      maxVal = listMax
+    if listMin < minVal:
+      minVal = listMin
+  normalMagWindows = []
+  for list in magWindows:
+    normalList = []
+    for val in list:
+      normalized = (val - minVal) / (maxVal - minVal)
+      normalList.append(normalized)
+    normalMagWindows.append(normalList)
+  return normalMagWindows
+
+
 def plot (magWindows):
   # I think plt.imshow may be helpful here. 
-  # Not sure if we need windows and magWindows as input. 
   # By using the rfft function, I believe this only outputs the necessary data (half the array).
-  return
+  pixelPlt = plt.figure()
+  magnitudes = np.array(magWindows)
+  # magnitudes = magnitudes.reshape(len(magnitudes[0]), len(magnitudes))
+  pixel_plot = plt.imshow(magnitudes, cmap = 'binary', interpolation='nearest', origin='lower')
+  plt.show()
 
 def main():
   wavFile = sys.argv[1]
   windows = readWav(wavFile) # Contains a list of lists. Outer list is each window and inner list is each sample.
   magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
-  plot(magWindows)
+  normalMagWindows = normalize(magWindows)
+  plot(normalMagWindows)
   return
 
 if __name__ == '__main__':

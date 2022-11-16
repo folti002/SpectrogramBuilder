@@ -45,7 +45,7 @@ which serves a similar purpose in the graphics primitive world.
 try:
     import tkinter
 except:
-    import Tkinter as tkinter
+    import tkinter
 
 pilAvailable = True
 try:
