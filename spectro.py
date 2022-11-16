@@ -5,17 +5,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 def readWav(wavFile): # NOT SURE IF I AM ACCOUNTING FOR STEP CORRECTLY.
+  # Open wav file and retrieve number of frames
   wav = wave.open(wavFile)
-  params = wav.getparams()
+  params = wav.getparams()  
+  print(params)
   nframes = params[3]
+
+  # Set up variables to use in loop over all frames
   count = 0
   windows = []
   sampleList = []
   hanning = np.hanning(400)
-  for i in range (nframes):
+  for num in range (nframes):
     sample = wav.readframes(1)
     sample = (np.frombuffer(sample, dtype='int16'))[0] # IS THIS CORRECT?
     sampleList.append(sample)
+    print(sampleList)
     count += 1
     if count == 400:
       hanninged = [hanning[i] * sampleList[i] for i in range(len(sampleList))] # IS THIS CORRECT?
