@@ -15,24 +15,39 @@ def readWav(wavFile): # NOT SURE IF I AM ACCOUNTING FOR STEP CORRECTLY.
   count = 0
   windows = []
   sampleList = []
+  # Set up hanning with 400 values to smooth edges of our windows
   hanning = np.hanning(400)
+  # Iterate over all frames/samples in our audio file
   for num in range (nframes):
+    # Read the next sample, convert to an integer, and add to our sample list
     sample = wav.readframes(1)
     sample = (np.frombuffer(sample, dtype='int16'))[0] # IS THIS CORRECT?
     sampleList.append(sample)
-    print(sampleList)
     count += 1
+
+    # Once our count is 400, our window is complete, so we want to apply our hanning and add to our list of windows
     if count == 400:
       hanninged = [hanning[i] * sampleList[i] for i in range(len(sampleList))] # IS THIS CORRECT?
       windows.append(hanninged)
+
+      # Simulate moving 10 ms forward in file by not ignoring the 15 ms overlap between windows
+      # There are 240 samples in 15 ms, so set count back to 240
+      # Add the last 240 samples from the previous sampleList into the new sampleList and add from that point forward
       count = 240
       sampleList = sampleList[-240:]
+
+  # Close audio file and return list of windows containing lists of frequencies in that window
+  wav.close()
   return windows
 
 def fft(windows):
   fftWindows = []
+
+  # Run every window through the Fast Fourier Transform (FFT) and append to fftWindows
   for list in windows:
     fftWindows.append(np.fft.rfft(list))
+
+  # Now we must compute the magnitudes of each of these indices (ignore the imaginary number part)
   magWindows = []
   for thing in fftWindows:
     singleWindow = []
@@ -75,9 +90,11 @@ def plot (magWindows):
 def main():
   wavFile = sys.argv[1]
   windows = readWav(wavFile) # Contains a list of lists. Outer list is each window and inner list is each sample.
-  magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
-  normalMagWindows = normalize(magWindows)
-  plot(normalMagWindows)
+  print(windows[-1])
+  # magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
+  # normalMagWindows = normalize(magWindows)
+  # plot(normalMagWindows)
+
   return
 
 if __name__ == '__main__':
