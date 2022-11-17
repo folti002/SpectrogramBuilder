@@ -14,7 +14,6 @@ def readWav(wavFile):
   # Open wav file and retrieve number of frames
   wav = wave.open(wavFile)
   params = wav.getparams()  
-  print(params)
   nframes = params[3]
 
   # Set up variables to use in loop over all frames
@@ -93,30 +92,27 @@ def normalize (magWindows):
       normalized = (val - minVal) / (maxVal - minVal)
       normalList.append(normalized)
     normalMagWindows.append(normalList)
-  print(maxVal)
-  print(minVal)
   return normalMagWindows
 
-
+# Plot our frequency magnitudes
 def plot (magWindows):
   # I think plt.imshow may be helpful here. 
   # By using the rfft function, I believe this only outputs the necessary data (half the array).
-  pixelPlt = plt.figure()
+  plt.figure()
   magnitudes = np.array(magWindows)
   # magnitudes = magnitudes.reshape(len(magnitudes[0]), len(magnitudes))
-  pixel_plot = plt.imshow(magnitudes, cmap = 'binary', interpolation='nearest', origin='lower')
+  plt.imshow(magnitudes, cmap = 'binary', interpolation='nearest', origin='lower')
   plt.show()
 
 def main():
   wavFile = sys.argv[1]
   windows = readWav(wavFile) # Contains a list of lists. Outer list is each window and inner list is each sample.
-  print(windows[50], len(windows), len(windows[50]))
+  # print(windows[50], len(windows), len(windows[50]))
   magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
-  print(magWindows[50], len(magWindows), len(magWindows[50]))
+  # print(magWindows[50], len(magWindows), len(magWindows[50]))
   normalMagWindows = normalize(magWindows)
-  print(normalMagWindows[50], len(normalMagWindows), len(normalMagWindows[50]))
+  # print(normalMagWindows[50], len(normalMagWindows), len(normalMagWindows[50]))
   plot(normalMagWindows)
-
   return
 
 if __name__ == '__main__':
