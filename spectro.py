@@ -1,10 +1,16 @@
+# File Name: spectro.py
+# File Authors: Safwan Diwan and Mikkel Folting
+# Date: November 18, 2022
+# Description: This script takes in a .wav file and displays a spectrogram of frequencies in that .wav file
+
 import math
 import sys
 import wave
 import numpy as np
 import matplotlib.pyplot as plt
 
-def readWav(wavFile): # NOT SURE IF I AM ACCOUNTING FOR STEP CORRECTLY.
+# Read our .wav file and extract windows with frequencies  
+def readWav(wavFile):
   # Open wav file and retrieve number of frames
   wav = wave.open(wavFile)
   params = wav.getparams()  
@@ -15,19 +21,21 @@ def readWav(wavFile): # NOT SURE IF I AM ACCOUNTING FOR STEP CORRECTLY.
   count = 0
   windows = []
   sampleList = []
+
   # Set up hanning with 400 values to smooth edges of our windows
   hanning = np.hanning(400)
+
   # Iterate over all frames/samples in our audio file
   for num in range (nframes):
     # Read the next sample, convert to an integer, and add to our sample list
     sample = wav.readframes(1)
-    sample = (np.frombuffer(sample, dtype='int16'))[0] # IS THIS CORRECT?
+    sample = (np.frombuffer(sample, dtype='int16'))[0]
     sampleList.append(sample)
     count += 1
 
     # Once our count is 400, our window is complete, so we want to apply our hanning and add to our list of windows
     if count == 400:
-      hanninged = [hanning[i] * sampleList[i] for i in range(len(sampleList))] # IS THIS CORRECT?
+      hanninged = [hanning[i] * sampleList[i] for i in range(len(sampleList))]
       windows.append(hanninged)
 
       # Simulate moving 10 ms forward in file by not ignoring the 15 ms overlap between windows
@@ -40,6 +48,8 @@ def readWav(wavFile): # NOT SURE IF I AM ACCOUNTING FOR STEP CORRECTLY.
   wav.close()
   return windows
 
+
+# Compute FFT for all of our windows
 def fft(windows):
   fftWindows = []
 
@@ -49,25 +59,33 @@ def fft(windows):
 
   # Now we must compute the magnitudes of each of these indices (ignore the imaginary number part)
   magWindows = []
-  for thing in fftWindows:
+  count = 0
+  for window in fftWindows:
     singleWindow = []
-    for val in thing:
-      magnitude = ((val.imag)**2) + (val.real ** 2)
-      squareMag = 10 * math.log(magnitude, 10)
-      singleWindow.append(squareMag)
+
+    # Iterate through the current window and calculate the square and log magnitude at each sample using the real and imaginary numbers calculated there
+    for frequency in window:
+      squareMag = math.sqrt((frequency.imag ** 2) + (frequency.real ** 2))
+      logMag = 10 * math.log(squareMag, 10)
+      singleWindow.append(logMag)
     magWindows.append(singleWindow)
+    count += 1
   return magWindows
 
+# Normalize our frequency magnitudes 
 def normalize (magWindows):
   minVal = float("inf")
   maxVal = float("-inf")
-  for list in magWindows: # Get max and min of lists to normalize
+  # Find the global maximum and minimum frequency magnitude among all windows
+  for list in magWindows:
     listMax = max(list)
     listMin = min(list)
     if listMax > maxVal:
       maxVal = listMax
     if listMin < minVal:
       minVal = listMin
+
+  # Normalize every value in each frequency magnitude list
   normalMagWindows = []
   for list in magWindows:
     normalList = []
@@ -75,6 +93,8 @@ def normalize (magWindows):
       normalized = (val - minVal) / (maxVal - minVal)
       normalList.append(normalized)
     normalMagWindows.append(normalList)
+  print(maxVal)
+  print(minVal)
   return normalMagWindows
 
 
@@ -90,10 +110,12 @@ def plot (magWindows):
 def main():
   wavFile = sys.argv[1]
   windows = readWav(wavFile) # Contains a list of lists. Outer list is each window and inner list is each sample.
-  print(windows[-1])
-  # magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
-  # normalMagWindows = normalize(magWindows)
-  # plot(normalMagWindows)
+  print(windows[50], len(windows), len(windows[50]))
+  magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
+  print(magWindows[50], len(magWindows), len(magWindows[50]))
+  normalMagWindows = normalize(magWindows)
+  print(normalMagWindows[50], len(normalMagWindows), len(normalMagWindows[50]))
+  plot(normalMagWindows)
 
   return
 
