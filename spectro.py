@@ -58,7 +58,6 @@ def fft(windows):
 
   # Now we must compute the magnitudes of each of these indices (ignore the imaginary number part)
   magWindows = []
-  count = 0
   for window in fftWindows:
     singleWindow = []
 
@@ -68,7 +67,6 @@ def fft(windows):
       logMag = 10 * math.log(squareMag, 10)
       singleWindow.append(logMag)
     magWindows.append(singleWindow)
-    count += 1
   return magWindows
 
 # Normalize our frequency magnitudes 
