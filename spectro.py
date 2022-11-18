@@ -96,22 +96,30 @@ def normalize (magWindows):
 
 # Plot our frequency magnitudes
 def plot (magWindows):
-  # I think plt.imshow may be helpful here. 
-  # By using the rfft function, I believe this only outputs the necessary data (half the array).
   plt.figure()
+
+  # Converts our normalized list of lists of magnitude frequnecies into a np array and then transposes for correct format
   magnitudes = np.array(magWindows)
-  # magnitudes = magnitudes.reshape(len(magnitudes[0]), len(magnitudes))
+  magnitudes = magnitudes.transpose()
+
+  # Create and show plot of pixels with higher intensities being darker colors
   plt.imshow(magnitudes, cmap = 'binary', interpolation='nearest', origin='lower')
   plt.show()
 
 def main():
+  # Read in the name of the wave file
   wavFile = sys.argv[1]
+
+  # Create our windows by reading our waves 
   windows = readWav(wavFile) # Contains a list of lists. Outer list is each window and inner list is each sample.
-  # print(windows[50], len(windows), len(windows[50]))
+
+  # Calculate the frequency magnitudes of our windows through the FFT
   magWindows = fft(windows) # Contains a list of lists. Outer list is each window and inner list is each magnitude.
-  # print(magWindows[50], len(magWindows), len(magWindows[50]))
+
+  # Normalize our frequency magnitudes
   normalMagWindows = normalize(magWindows)
-  # print(normalMagWindows[50], len(normalMagWindows), len(normalMagWindows[50]))
+
+  # Plot our magnitudes!
   plot(normalMagWindows)
   return
 
